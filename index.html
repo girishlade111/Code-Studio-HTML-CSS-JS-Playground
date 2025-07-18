@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Code Studio – HTML, CSS & JS Playground</title>
+
+  <!--  Fonts & Icons  -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://unpkg.com/phosphor-icons@1.4.2/src/css/icons.css" rel="stylesheet"/>
+
+  <!--  JSZip for Export  -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
+  <!--  CodeMirror  -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/material-darker.min.css"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #ffffff;
+      --bg-panel: #fafafa;
+      --bg-code: #f5f5f5;
+      --border: #e0e0e0;
+      --text: #111;
+      --accent: #0066ff;
+    }
+
+    [data-theme="dark"] {
+      --bg: #121212;
+      --bg-panel: #1e1e1e;
+      --bg-code: #2b2b2b;
+      --border: #333;
+      --text: #e4e4e4;
+      --accent: #80b3ff;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      transition: background .3s, color .3s;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: .75rem 1rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-panel);
+    }
+
+    header h1 {
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+
+    .spacer { flex: 1; }
+
+    button {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: .4rem .7rem;
+      font-size: .85rem;
+      cursor: pointer;
+      transition: all .2s;
+      color: var(--text);
+    }
+    button:hover {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    .editors {
+      display: flex;
+      flex: 1;
+      border-bottom: 1px solid var(--border);
+    }
+    .editor {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid var(--border);
+    }
+    .editor:last-child { border-right: none; }
+    .editor h2 {
+      font-size: .9rem;
+      font-weight: 500;
+      padding: .5rem .75rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-panel);
+    }
+    .CodeMirror {
+      flex: 1;
+      font-size: .9rem;
+      line-height: 1.4;
+    }
+
+    .preview {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .preview h2 {
+      font-size: .9rem;
+      font-weight: 500;
+      padding: .5rem .75rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-panel);
+    }
+    iframe {
+      flex: 1;
+      background: #fff;
+      border: none;
+    }
+
+    /* Theme toggle switch */
+    .switch {
+      position: relative;
+      width: 44px;
+      height: 22px;
+    }
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--border);
+      transition: .3s;
+      border-radius: 22px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 3px;
+      bottom: 3px;
+      background: var(--bg);
+      border-radius: 50%;
+      transition: .3s;
+    }
+    input:checked + .slider:before {
+      transform: translateX(22px);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Code Studio</h1>
+    <button onclick="loadFiles()"><i class="ph ph-upload-simple"></i> Load files</button>
+    <button onclick="exportProject()"><i class="ph ph-download-simple"></i> Export</button>
+    <div class="spacer"></div>
+    <label class="switch">
+      <input type="checkbox" id="themeToggle" onchange="toggleTheme()">
+      <span class="slider"></span>
+    </label>
+  </header>
+
+  <div class="editors">
+    <div class="editor">
+      <h2>HTML</h2>
+      <textarea id="htmlCode"></textarea>
+    </div>
+    <div class="editor">
+      <h2>CSS</h2>
+      <textarea id="cssCode"></textarea>
+    </div>
+    <div class="editor">
+      <h2>JS</h2>
+      <textarea id="jsCode"></textarea>
+    </div>
+  </div>
+
+  <div class="preview">
+    <h2>Live Preview</h2>
+    <iframe id="previewFrame"></iframe>
+  </div>
+
+  <input type="file" id="fileInput" multiple accept=".html,.css,.js" style="display:none">
+
+  <script>
+    // --- Theme ---
+    const root = document.documentElement;
+    const toggle = document.getElementById('themeToggle');
+    if (localStorage.theme === 'dark') {
+      root.setAttribute('data-theme', 'dark');
+      toggle.checked = true;
+    }
+    function toggleTheme() {
+      if (toggle.checked) {
+        root.setAttribute('data-theme', 'dark');
+        localStorage.theme = 'dark';
+      } else {
+        root.removeAttribute('data-theme');
+        localStorage.removeItem('theme');
+      }
+      updatePreview();
+    }
+
+    // --- CodeMirror Instances ---
+    const htmlEditor = CodeMirror.fromTextArea(document.getElementById('htmlCode'), {
+      mode: 'htmlmixed',
+      theme: localStorage.theme === 'dark' ? 'material-darker' : 'default',
+      lineNumbers: true,
+      lineWrapping: true,
+    });
+    const cssEditor = CodeMirror.fromTextArea(document.getElementById('cssCode'), {
+      mode: 'css',
+      theme: localStorage.theme === 'dark' ? 'material-darker' : 'default',
+      lineNumbers: true,
+      lineWrapping: true,
+    });
+    const jsEditor = CodeMirror.fromTextArea(document.getElementById('jsCode'), {
+      mode: 'javascript',
+      theme: localStorage.theme === 'dark' ? 'material-darker' : 'default',
+      lineNumbers: true,
+      lineWrapping: true,
+    });
+
+    // --- Preview ---
+    const iframe = document.getElementById('previewFrame');
+    function updatePreview() {
+      const html = htmlEditor.getValue();
+      const css = `<style>${cssEditor.getValue()}</style>`;
+      const js = `<script>${jsEditor.getValue()}<\/script>`;
+      const doc = iframe.contentDocument || iframe.contentWindow.document;
+      doc.open();
+      doc.write(html + css + js);
+      doc.close();
+    }
+
+    [htmlEditor, cssEditor, jsEditor].forEach(ed => ed.on('change', updatePreview));
+    updatePreview();
+
+    // --- File IO ---
+    function loadFiles() {
+      document.getElementById('fileInput').click();
+    }
+
+    document.getElementById('fileInput').addEventListener('change', (e) => {
+      [...e.target.files].forEach(file => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const content = reader.result;
+          const ext = file.name.split('.').pop().toLowerCase();
+          if (ext === 'html') htmlEditor.setValue(content);
+          else if (ext === 'css') cssEditor.setValue(content);
+          else if (ext === 'js') jsEditor.setValue(content);
+          updatePreview();
+        };
+        reader.readAsText(file);
+      });
+    });
+
+    // Drag & Drop
+    ['dragenter', 'dragover', 'drop'].forEach(evt =>
+      document.addEventListener(evt, e => e.preventDefault()));
+    document.addEventListener('drop', (e) => {
+      e.preventDefault();
+      [...e.dataTransfer.files].forEach(file => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const content = reader.result;
+          const ext = file.name.split('.').pop().toLowerCase();
+          if (ext === 'html') htmlEditor.setValue(content);
+          else if (ext === 'css') cssEditor.setValue(content);
+          else if (ext === 'js') jsEditor.setValue(content);
+          updatePreview();
+        };
+        reader.readAsText(file);
+      });
+    });
+
+    // --- Export ---
+    function exportProject() {
+      const zip = new JSZip();
+      zip.file('index.html', htmlEditor.getValue());
+      zip.file('styles.css', cssEditor.getValue());
+      zip.file('script.js', jsEditor.getValue());
+      zip.generateAsync({ type: 'blob' }).then(blob => {
+        saveAs(blob, 'code-studio.zip');
+      });
+    }
+  </script>
+</body>
+</html>
