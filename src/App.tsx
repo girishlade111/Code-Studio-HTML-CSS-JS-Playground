@@ -252,18 +252,32 @@ function App() {
   const updatePreview = useCallback(() => {
     const iframe = iframeRef.current;
     if (!iframe) return;
-    const doc = iframe.contentDocument;
-    if (doc) {
-      doc.open();
-      doc.write(previewContent);
-      doc.close();
+    try {
+      const doc = iframe.contentDocument;
+      if (doc) {
+        doc.open();
+        doc.write(previewContent);
+        doc.close();
+      }
+    } catch {
+      iframe.srcdoc = previewContent;
     }
   }, [previewContent]);
 
+  // Update preview on code change with debounce
   useEffect(() => {
-    const timer = setTimeout(() => updatePreview(), 100);
+    const timer = setTimeout(() => {
+      updatePreview();
+    }, 300);
     return () => clearTimeout(timer);
   }, [updatePreview]);
+
+  // Initial render
+  useEffect(() => {
+    if (iframeRef.current) {
+      updatePreview();
+    }
+  }, []);
 
   return (
     <div className="vscode-shell">
@@ -503,6 +517,7 @@ function App() {
                 className="preview-frame"
                 title="Preview"
                 sandbox="allow-scripts"
+                srcDoc={previewContent}
               />
             </div>
           </div>
