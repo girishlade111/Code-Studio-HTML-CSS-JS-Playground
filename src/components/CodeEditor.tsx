@@ -1,4 +1,4 @@
-import { useRef, useEffect, useCallback } from 'react';
+import { useRef, useCallback } from 'react';
 import Editor, { OnMount } from '@monaco-editor/react';
 import type * as Monaco from 'monaco-editor';
 

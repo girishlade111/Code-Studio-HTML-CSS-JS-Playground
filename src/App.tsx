@@ -17,14 +17,14 @@ import {
   AlertCircle,
   RefreshCw
 } from 'lucide-react';
-import type { FileType, ConsoleLog, Toast } from '../types';
-import { useTheme } from '../hooks/useTheme';
-import { useCodeEditor } from '../hooks/useCodeEditor';
-import { exportProject } from '../utils/export';
+import type { ConsoleLog, Toast } from './types';
+import { useTheme } from './hooks/useTheme';
+import { useCodeEditor } from './hooks/useCodeEditor';
+import { exportProject } from './utils/export';
 import './App.css';
 
 function App() {
-  const { theme, toggleTheme, isDark } = useTheme();
+  const { toggleTheme, isDark } = useTheme();
   const {
     html,
     css,
@@ -40,9 +40,9 @@ function App() {
 
   const [cursorPos, setCursorPos] = useState({ line: 1, column: 1 });
   const [toasts, setToasts] = useState<Toast[]>([]);
-  const [loading, setLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const editorRef = useRef<Monaco.editor.IStandaloneCodeEditor | null>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   const showToast = useCallback((message: string, type: Toast['type'] = 'info') => {
     const id = Date.now().toString();
@@ -82,13 +82,10 @@ function App() {
 
   const handleExport = useCallback(async () => {
     try {
-      setLoading(true);
       const msg = await exportProject(html, css, js);
       showToast(msg, 'success');
-    } catch (error) {
+    } catch {
       showToast('Export failed', 'error');
-    } finally {
-      setLoading(false);
     }
   }, [html, css, js, showToast]);
 
@@ -169,7 +166,7 @@ function App() {
           const originalWarn = console.warn;
           const originalError = console.error;
 
-          function sendToParent(type, args) {
+          function sendToParent(type: string, args: unknown[]) {
             window.parent.postMessage({
               type: 'console',
               method: type,
@@ -177,13 +174,13 @@ function App() {
             }, '*');
           }
 
-          console.log = function() { sendToParent('log', arguments); originalLog.apply(console, arguments); };
-          console.info = function() { sendToParent('info', arguments); originalInfo.apply(console, arguments); };
-          console.warn = function() { sendToParent('warn', arguments); originalWarn.apply(console, arguments); };
-          console.error = function() { sendToParent('error', arguments); originalError.apply(console, arguments); };
+          console.log = function() { sendToParent('log', arguments as unknown[]); originalLog.apply(console, arguments); };
+          console.info = function() { sendToParent('info', arguments as unknown[]); originalInfo.apply(console, arguments); };
+          console.warn = function() { sendToParent('warn', arguments as unknown[]); originalWarn.apply(console, arguments); };
+          console.error = function() { sendToParent('error', arguments as unknown[]); originalError.apply(console, arguments); };
 
-          window.onerror = function(msg, url, line) {
-            sendToParent('error', [msg + ' (line ' + line + ')']);
+          window.onerror = function(msg) {
+            sendToParent('error', [msg]);
           };
         })();
 
@@ -197,16 +194,16 @@ function App() {
     </html>
   `;
 
-  const iframeRef = useRef<HTMLIFrameElement>(null);
-
   useEffect(() => {
     const iframe = iframeRef.current;
     if (!iframe) return;
     
-    const doc = iframe.contentDocument || iframe.contentWindow.document;
-    doc.open();
-    doc.write(previewContent);
-    doc.close();
+    const doc = iframe.contentDocument;
+    if (doc) {
+      doc.open();
+      doc.write(previewContent);
+      doc.close();
+    }
   }, [previewContent]);
 
   return (
@@ -355,7 +352,7 @@ function App() {
                 Console ready. Type JavaScript to see output.
               </div>
             ) : (
-              consoleLogs.map(log => (
+              consoleLogs.map((log) => (
                 <div key={log.id} className={`console-log ${log.type}`}>
                   <span className="console-time">
                     {log.timestamp.toLocaleTimeString()}
