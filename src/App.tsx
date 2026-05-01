@@ -576,7 +576,7 @@ function App() {
               onClick={() => window.open('https://www.instagram.com/girish_lade_/', '_blank')}
               title="Instagram"
             >
-              <Code size={22} />
+              <InstagramIcon size={22} />
             </button>
             <button
               className="activity-btn"
