@@ -28,6 +28,28 @@ import {
   RefreshCw,
   MoreHorizontal,
   SplitSquareHorizontal,
+  Github,
+  Linkedin,
+  Mail,
+  Globe,
+  Code
+} from 'lucide-react';
+
+const InstagramIcon = ({ size = 22 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+  </svg>
+);
+
+const CodepenIcon = ({ size = 22 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 2l9 5v10l-9 5-9-5V7l9-5z" />
+    <path d="M12 22V12" />
+    <path d="M3 7l9 5 9-5" />
+  </svg>
+);
   Maximize2,
   Minus
 } from 'lucide-react';
@@ -496,7 +518,7 @@ function App() {
       {/* Main Layout */}
       <div className="vscode-body" ref={mainAreaRef}>
         {/* Activity Bar */}
-        <aside className="activity-bar">
+<aside className="activity-bar">
           <div className="activity-top">
             <button
               className={`activity-btn ${activitySection === 'explorer' ? 'active' : ''}`}
@@ -507,35 +529,75 @@ function App() {
             </button>
             <button
               className={`activity-btn ${activitySection === 'search' ? 'active' : ''}`}
-              onClick={() => setActivitySection('search')}
+              onClick={() => { setActivitySection('search'); setExplorerOpen(false); }}
               title="Search (Ctrl+Shift+F)"
             >
               <Search size={22} />
             </button>
             <button
               className={`activity-btn ${activitySection === 'git' ? 'active' : ''}`}
-              onClick={() => setActivitySection('git')}
+              onClick={() => { setActivitySection('git'); setExplorerOpen(false); }}
               title="Source Control (Ctrl+Shift+G)"
             >
               <GitBranch size={22} />
             </button>
             <button
               className={`activity-btn ${activitySection === 'run' ? 'active' : ''}`}
-              onClick={() => setActivitySection('run')}
+              onClick={() => { setActivitySection('run'); setExplorerOpen(false); }}
               title="Run and Debug (Ctrl+Shift+D)"
             >
               <Play size={22} />
             </button>
+            <button
+              className={`activity-btn ${activitySection === 'extensions' ? 'active' : ''}`}
+              onClick={() => { setActivitySection('extensions'); setExplorerOpen(false); }}
+              title="Extensions (Ctrl+Shift+X)"
+            >
+              <SplitSquareHorizontal size={22} />
+            </button>
           </div>
           <div className="activity-bottom">
-            <button className="activity-btn" title="Accounts">
-              <User size={22} />
+            <button
+              className="activity-btn"
+              onClick={() => window.open('https://github.com/girishlade111', '_blank')}
+              title="GitHub"
+            >
+              <Github size={22} />
             </button>
-            <button className="activity-btn" onClick={toggleTheme} title="Toggle Theme">
-              {isDark ? <Sun size={22} /> : <Moon size={22} />}
+            <button
+              className="activity-btn"
+              onClick={() => window.open('https://www.linkedin.com/in/girish-lade-075bba201/', '_blank')}
+              title="LinkedIn"
+            >
+              <Linkedin size={22} />
             </button>
-            <button className="activity-btn" title="Settings">
-              <Settings size={22} />
+            <button
+              className="activity-btn"
+              onClick={() => window.open('https://www.instagram.com/girish_lade_/', '_blank')}
+              title="Instagram"
+            >
+              <Code size={22} />
+            </button>
+            <button
+              className="activity-btn"
+              onClick={() => window.open('https://codepen.io/Girish-Lade-the-looper', '_blank')}
+              title="CodePen"
+            >
+              <Globe size={22} />
+            </button>
+            <button
+              className="activity-btn"
+              onClick={() => window.location.href = 'mailto:admin@ladestack.in'}
+              title="Email"
+            >
+              <Mail size={22} />
+            </button>
+            <button
+              className="activity-btn"
+              onClick={() => window.open('https://ladestack.in', '_blank')}
+              title="Website"
+            >
+              <Globe size={22} />
             </button>
           </div>
         </aside>
