@@ -583,7 +583,7 @@ function App() {
               onClick={() => window.open('https://codepen.io/Girish-Lade-the-looper', '_blank')}
               title="CodePen"
             >
-              <Globe size={22} />
+              <CodepenIcon size={22} />
             </button>
             <button
               className="activity-btn"
