@@ -1,5 +1,5 @@
 import { FileCode2, FileType, FileJson, Monitor } from 'lucide-react';
-import { FileType } from '../types';
+import type { FileType as FileTypeEnum } from '../types';
 
 interface EditorTabsProps {
   activeFile: FileType;
