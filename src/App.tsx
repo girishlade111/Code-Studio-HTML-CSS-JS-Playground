@@ -50,9 +50,6 @@ const CodepenIcon = ({ size = 22 }: { size?: number }) => (
     <path d="M3 7l9 5 9-5" />
   </svg>
 );
-  Maximize2,
-  Minus
-} from 'lucide-react';
 import type { ConsoleLog, Toast } from './types';
 import { useTheme } from './hooks/useTheme';
 import { useCodeEditor } from './hooks/useCodeEditor';
