@@ -2,44 +2,62 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Code Studio – HTML, CSS & JS Playground</title>
 
   <!--  Fonts & Icons  -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <link href="https://unpkg.com/phosphor-icons@1.4.2/src/css/icons.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://api.iconify.design/lucide.json" rel="stylesheet"/>
 
   <!--  JSZip for Export  -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
-  <!--  CodeMirror  -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css"/>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/material-darker.min.css"/>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
+  <!--  Monaco Editor  -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/editor/editor.main.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
 
   <style>
     :root {
-      --bg: #ffffff;
-      --bg-panel: #fafafa;
-      --bg-code: #f5f5f5;
-      --border: #e0e0e0;
-      --text: #111;
-      --accent: #0066ff;
+      --bg: #f8f9fc;
+      --bg-sidebar: #ffffff;
+      --bg-panel: #ffffff;
+      --bg-hover: #f1f3f8;
+      --bg-active: #e8ecf4;
+      --border: #e2e5ed;
+      --border-light: #f0f2f5;
+      --text: #1a1a2e;
+      --text-muted: #6b7194;
+      --accent: #6366f1;
+      --accent-hover: #4f46e5;
+      --accent-light: #e0e1ff;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --error: #ef4444;
+      --shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03);
+      --shadow-lg: 0 4px 6px rgba(0,0,0,0.02), 0 10px 24px rgba(0,0,0,0.04);
+      --radius: 8px;
+      --radius-sm: 6px;
+      --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     [data-theme="dark"] {
-      --bg: #121212;
-      --bg-panel: #1e1e1e;
-      --bg-code: #2b2b2b;
-      --border: #333;
-      --text: #e4e4e4;
-      --accent: #80b3ff;
+      --bg: #0d0d12;
+      --bg-sidebar: #14141a;
+      --bg-panel: #18181f;
+      --bg-hover: #1f1f2a;
+      --bg-active: #262630;
+      --border: #2a2a38;
+      --border-light: #1f1f2a;
+      --text: #e8e8ed;
+      --text-muted: #8b8b9e;
+      --accent: #818cf8;
+      --accent-hover: #6366f1;
+      --accent-light: #1f1f2a;
+      --shadow: 0 1px 3px rgba(0,0,0,0.2), 0 4px 12px rgba(0,0,0,0.15);
+      --shadow-lg: 0 4px 6px rgba(0,0,0,0.2), 0 10px 24px rgba(0,0,0,0.2);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -51,215 +69,1138 @@
       display: flex;
       flex-direction: column;
       height: 100vh;
-      transition: background .3s, color .3s;
+      overflow: hidden;
+      transition: background var(--transition), color var(--transition);
     }
 
-    header {
+    /* Header */
+    .toolbar {
       display: flex;
       align-items: center;
-      gap: 1rem;
-      padding: .75rem 1rem;
+      gap: 0.5rem;
+      padding: 0.75rem 1rem;
       border-bottom: 1px solid var(--border);
-      background: var(--bg-panel);
+      background: var(--bg-sidebar);
+      box-shadow: var(--shadow);
+      z-index: 100;
     }
 
-    header h1 {
-      font-size: 1.2rem;
-      font-weight: 600;
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding-right: 1rem;
+      border-right: 1px solid var(--border);
+      margin-right: 0.5rem;
+    }
+
+    .logo svg {
+      width: 28px;
+      height: 28px;
+    }
+
+    .logo span {
+      font-size: 1.1rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--accent) 0%, #a855f7 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .toolbar-group {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.25rem;
+      background: var(--bg-hover);
+      border-radius: var(--radius);
+    }
+
+    .toolbar-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.5rem 0.75rem;
+      background: transparent;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: inherit;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--text);
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+
+    .toolbar-btn:hover {
+      background: var(--accent-light);
+      color: var(--accent);
+    }
+
+    .toolbar-btn.active {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .toolbar-btn svg {
+      width: 16px;
+      height: 16px;
     }
 
     .spacer { flex: 1; }
 
-    button {
-      background: none;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: .4rem .7rem;
-      font-size: .85rem;
+    /* Theme Toggle */
+    .theme-toggle {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.25rem 0.5rem;
+      background: var(--bg-hover);
+      border-radius: 20px;
       cursor: pointer;
-      transition: all .2s;
+    }
+
+    .theme-toggle input { display: none; }
+
+    .theme-toggle .track {
+      position: relative;
+      width: 36px;
+      height: 20px;
+      background: var(--border);
+      border-radius: 10px;
+      transition: var(--transition);
+    }
+
+    .theme-toggle .thumb {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 16px;
+      height: 16px;
+      background: var(--bg-sidebar);
+      border-radius: 50%;
+      transition: var(--transition);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+
+    .theme-toggle input:checked + .track {
+      background: var(--accent);
+    }
+
+    .theme-toggle input:checked + .track .thumb {
+      transform: translateX(16px);
+    }
+
+    .theme-toggle svg {
+      width: 14px;
+      height: 14px;
+      color: var(--text-muted);
+    }
+
+    /* Main Layout */
+    .main {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 220px;
+      background: var(--bg-sidebar);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      transition: var(--transition);
+    }
+
+    .sidebar.collapsed { width: 50px; }
+
+    .sidebar-header {
+      padding: 0.75rem;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+    }
+
+    .tab-list {
+      display: flex;
+      flex-direction: column;
+      padding: 0.5rem;
+      gap: 0.25rem;
+    }
+
+    .tab-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 0.75rem;
+      background: transparent;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: inherit;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all var(--transition);
+      text-align: left;
+    }
+
+    .tab-item:hover {
+      background: var(--bg-hover);
       color: var(--text);
     }
-    button:hover {
+
+    .tab-item.active {
+      background: var(--accent-light);
+      color: var(--accent);
+    }
+
+    .tab-item svg {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+    }
+
+    .tab-item .badge {
+      margin-left: auto;
+      padding: 0.1rem 0.4rem;
       background: var(--accent);
+      border-radius: 4px;
+      font-size: 0.65rem;
+      font-weight: 600;
       color: #fff;
-      border-color: var(--accent);
     }
 
-    .editors {
-      display: flex;
-      flex: 1;
-      border-bottom: 1px solid var(--border);
-    }
-    .editor {
+    /* Content Area */
+    .content {
       flex: 1;
       display: flex;
       flex-direction: column;
-      border-right: 1px solid var(--border);
-    }
-    .editor:last-child { border-right: none; }
-    .editor h2 {
-      font-size: .9rem;
-      font-weight: 500;
-      padding: .5rem .75rem;
-      border-bottom: 1px solid var(--border);
-      background: var(--bg-panel);
-    }
-    .CodeMirror {
-      flex: 1;
-      font-size: .9rem;
-      line-height: 1.4;
+      overflow: hidden;
     }
 
+    /* Editor Tabs */
+    .editor-tabs {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      padding: 0 0.5rem;
+      background: var(--bg-sidebar);
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+    }
+
+    .editor-tab {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.6rem 1rem;
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      font-family: inherit;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all var(--transition);
+      white-space: nowrap;
+    }
+
+    .editor-tab:hover {
+      color: var(--text);
+    }
+
+    .editor-tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    .editor-tab .dot {
+      width: 6px;
+      height: 6px;
+      background: var(--warning);
+      border-radius: 50%;
+      opacity: 0;
+    }
+
+    .editor-tab.modified .dot { opacity: 1; }
+
+    .editor-tab svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .editor-tab-close {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      background: transparent;
+      border: none;
+      border-radius: 3px;
+      color: var(--text-muted);
+      cursor: pointer;
+      opacity: 0;
+      transition: var(--transition);
+    }
+
+    .editor-tab:hover .editor-tab-close { opacity: 1; }
+    .editor-tab-close:hover {
+      background: var(--error);
+      color: #fff;
+    }
+
+    /* Editors Container */
+    .editors-container {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .editor-panel {
+      display: none;
+      flex-direction: column;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .editor-panel.active { display: flex; }
+
+    .editor-wrapper {
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* Panel Splitter */
+    .splitter {
+      display: flex;
+      background: var(--border);
+      cursor: row-resize;
+      transition: var(--transition);
+    }
+
+    .splitter:hover { background: var(--accent); }
+
+    .splitter-v {
+      width: 4px;
+      cursor: col-resize;
+      flex-direction: column;
+    }
+
+    /* Console Panel */
+    .console {
+      height: 180px;
+      min-height: 100px;
+      max-height: 400px;
+      background: var(--bg-panel);
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      resize: vertical;
+      overflow: hidden;
+    }
+
+    .console-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.5rem 0.75rem;
+      background: var(--bg-sidebar);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .console-title {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .console-title svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .console-actions {
+      display: flex;
+      gap: 0.25rem;
+    }
+
+    .console-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      background: transparent;
+      border: none;
+      border-radius: 4px;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .console-btn:hover {
+      background: var(--bg-hover);
+      color: var(--text);
+    }
+
+    .console-btn svg { width: 14px; height: 14px; }
+
+    .console-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0.5rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      line-height: 1.5;
+    }
+
+    .console-log {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+      padding: 0.2rem 0;
+    }
+
+    .console-log .icon {
+      flex-shrink: 0;
+      width: 14px;
+      height: 14px;
+    }
+
+    .console-log.log .icon { color: var(--text-muted); }
+    .console-log.info .icon { color: var(--accent); }
+    .console-log.warn .icon { color: var(--warning); }
+    .console-log.error .icon { color: var(--error); }
+
+    .console-log .time {
+      flex-shrink: 0;
+      color: var(--text-muted);
+      font-size: 0.65rem;
+    }
+
+    .console-log .message {
+      flex: 1;
+      word-break: break-word;
+    }
+
+    .console-log.error .message { color: var(--error); }
+    .console-log.warn .message { color: var(--warning); }
+
+    /* Preview */
     .preview {
-      flex: 1;
       display: flex;
       flex-direction: column;
-    }
-    .preview h2 {
-      font-size: .9rem;
-      font-weight: 500;
-      padding: .5rem .75rem;
-      border-bottom: 1px solid var(--border);
+      flex: 1;
       background: var(--bg-panel);
     }
-    iframe {
+
+    .preview-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.5rem 0.75rem;
+      background: var(--bg-sidebar);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .preview-title {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .preview-title svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .preview-url {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      background: var(--bg-hover);
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+    }
+
+    .preview-frame {
       flex: 1;
       background: #fff;
       border: none;
     }
 
-    /* Theme toggle switch */
-    .switch {
-      position: relative;
-      width: 44px;
-      height: 22px;
+    [data-theme="dark"] .preview-frame {
+      background: #1a1a1a;
     }
-    .switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
+
+    /* Status Bar */
+    .statusbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.3rem 0.75rem;
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 500;
     }
-    .slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
+
+    .statusbar-left, .statusbar-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .status-item svg {
+      width: 12px;
+      height: 12px;
+    }
+
+    /* Toast Notification */
+    .toast-container {
+      position: fixed;
+      bottom: 2rem;
+      right: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      z-index: 1000;
+    }
+
+    .toast {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1rem;
+      background: var(--bg-sidebar);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-lg);
+      font-size: 0.85rem;
+      font-weight: 500;
+      animation: slideIn 0.3s ease;
+    }
+
+    .toast.success { border-left: 3px solid var(--success); }
+    .toast.error { border-left: 3px solid var(--error); }
+
+    .toast svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .toast.success svg { color: var(--success); }
+    .toast.error svg { color: var(--error); }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    /* Monaco Editor Overrides */
+    .monaco-editor {
+      padding-top: 0.5rem;
+    }
+
+    #fileInput { display: none; }
+
+    /* Shortcut hints */
+    .shortcut {
+      font-size: 0.65rem;
+      padding: 0.1rem 0.3rem;
       background: var(--border);
-      transition: .3s;
-      border-radius: 22px;
-    }
-    .slider:before {
-      position: absolute;
-      content: "";
-      height: 16px;
-      width: 16px;
-      left: 3px;
-      bottom: 3px;
-      background: var(--bg);
-      border-radius: 50%;
-      transition: .3s;
-    }
-    input:checked + .slider:before {
-      transform: translateX(22px);
+      border-radius: 3px;
+      color: var(--text-muted);
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>Code Studio</h1>
-    <button onclick="loadFiles()"><i class="ph ph-upload-simple"></i> Load files</button>
-    <button onclick="exportProject()"><i class="ph ph-download-simple"></i> Export</button>
+  <!-- Toolbar -->
+  <header class="toolbar">
+    <div class="logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="18" height="18" rx="2" stroke="var(--accent)"/>
+        <path d="M7 8h10M7 12h6M7 16h8" stroke="var(--accent)"/>
+      </svg>
+      <span>Code Studio</span>
+    </div>
+
+    <div class="toolbar-group">
+      <button class="toolbar-btn" onclick="newProject()" title="New Project">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M12 18v-6M9 15h6"/></svg>
+        New
+      </button>
+      <button class="toolbar-btn" onclick="document.getElementById('fileInput').click()" title="Open Files">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        Open
+      </button>
+      <button class="toolbar-btn" onclick="saveProject()" title="Save Project (Ctrl+S)">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
+        Save
+      </button>
+    </div>
+
+    <div class="toolbar-group">
+      <button class="toolbar-btn" onclick="exportProject()" title="Export as ZIP">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+        Export
+      </button>
+    </div>
+
     <div class="spacer"></div>
-    <label class="switch">
+
+    <div class="toolbar-group">
+      <button class="toolbar-btn" onclick="formatCode()" title="Format Code">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10H3M21 6H3M21 14H3M21 18H3"/></svg>
+        Format
+      </button>
+      <button class="toolbar-btn" onclick="clearConsole()" title="Clear Console">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        Clear
+      </button>
+    </div>
+
+    <label class="theme-toggle">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
       <input type="checkbox" id="themeToggle" onchange="toggleTheme()">
-      <span class="slider"></span>
+      <div class="track"><div class="thumb"></div></div>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
     </label>
   </header>
 
-  <div class="editors">
-    <div class="editor">
-      <h2>HTML</h2>
-      <textarea id="htmlCode"></textarea>
-    </div>
-    <div class="editor">
-      <h2>CSS</h2>
-      <textarea id="cssCode"></textarea>
-    </div>
-    <div class="editor">
-      <h2>JS</h2>
-      <textarea id="jsCode"></textarea>
-    </div>
-  </div>
+  <!-- Main Content -->
+  <main class="main">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">Files</div>
+      <div class="tab-list">
+        <button class="tab-item active" onclick="switchTab('html')">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 15h6"/></svg>
+          index.html
+          <span class="badge">HTML</span>
+        </button>
+        <button class="tab-item" onclick="switchTab('css')">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 15h6"/></svg>
+          styles.css
+          <span class="badge">CSS</span>
+        </button>
+        <button class="tab-item" onclick="switchTab('js')">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 15h6"/></svg>
+          script.js
+          <span class="badge">JS</span>
+        </button>
+      </div>
 
-  <div class="preview">
-    <h2>Live Preview</h2>
-    <iframe id="previewFrame"></iframe>
-  </div>
+      <div class="sidebar-header" style="margin-top: auto;">Console</div>
+      <div class="tab-list">
+        <button class="tab-item" onclick="toggleConsole()">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M8 10h8M8 14h4"/></svg>
+          Console Output
+        </button>
+      </div>
+    </aside>
 
-  <input type="file" id="fileInput" multiple accept=".html,.css,.js" style="display:none">
+    <!-- Content -->
+    <div class="content">
+      <div class="editor-tabs">
+        <button class="editor-tab active" onclick="switchTab('html')">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+          index.html
+        </button>
+        <button class="editor-tab" onclick="switchTab('css')">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+          styles.css
+        </button>
+        <button class="editor-tab" onclick="switchTab('js')">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+          script.js
+        </button>
+      </div>
+
+      <div class="editors-container">
+        <div class="editor-panel active" id="htmlPanel">
+          <div class="editor-wrapper" id="htmlEditor"></div>
+        </div>
+        <div class="editor-panel" id="cssPanel">
+          <div class="editor-wrapper" id="cssEditor"></div>
+        </div>
+        <div class="editor-panel" id="jsPanel">
+          <div class="editor-wrapper" id="jsEditor"></div>
+        </div>
+      </div>
+
+      <div class="splitter" id="mainSplitter"></div>
+
+      <div class="preview">
+        <div class="preview-header">
+          <div class="preview-title">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+            Live Preview
+          </div>
+          <div class="preview-url">localhost:preview</div>
+        </div>
+        <iframe class="preview-frame" id="previewFrame"></iframe>
+      </div>
+
+      <div class="console" id="console">
+        <div class="console-header">
+          <div class="console-title">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M8 10h8M8 14h4"/></svg>
+            Console
+          </div>
+          <div class="console-actions">
+            <button class="console-btn" onclick="clearConsole()" title="Clear">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="console-body" id="consoleBody">
+          <div class="console-log info">
+            <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+            <span class="message">Console ready. Type JavaScript code to see output here.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Status Bar -->
+  <footer class="statusbar">
+    <div class="statusbar-left">
+      <div class="status-item">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
+        <span id="statusInfo">Ready</span>
+      </div>
+    </div>
+    <div class="statusbar-right">
+      <div class="status-item">
+        <span id="cursorPos">Ln 1, Col 1</span>
+      </div>
+      <div class="status-item">
+        <span id="fileType">HTML</span>
+      </div>
+      <div class="status-item">
+        <span>UTF-8</span>
+      </div>
+    </div>
+  </footer>
+
+  <input type="file" id="fileInput" multiple accept=".html,.css,.js">
+
+  <div class="toast-container" id="toastContainer"></div>
 
   <script>
-    // --- Theme ---
+    // Initialize Monaco Editor
+    require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs' } });
+
+    let htmlEditor, cssEditor, jsEditor;
+    let currentTab = 'html';
+    let consoleVisible = true;
+    let modified = { html: false, css: false, js: false };
+
+    require(['vs/editor/editor.main'], function () {
+      const isDark = localStorage.theme === 'dark';
+      const theme = isDark ? 'vs-dark' : 'vs';
+
+      // Default code templates
+      const defaultHTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Project</title>
+</head>
+<body>
+  <div class="container">
+    <h1>Hello, World!</h1>
+    <p>Start coding your project here.</p>
+    <button id="btn">Click Me</button>
+  </div>
+</body>
+</html>`;
+
+      const defaultCSS = `* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.container {
+  text-align: center;
+  color: #fff;
+}
+
+h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+p {
+  font-size: 1.1rem;
+  opacity: 0.9;
+  margin-bottom: 1.5rem;
+}
+
+button {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  border: none;
+  border-radius: 8px;
+  background: #fff;
+  color: #667eea;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}`;
+
+      const defaultJS = `// Example JavaScript code
+document.getElementById('btn').addEventListener('click', function() {
+  console.log('Button clicked!');
+  alert('Hello from Code Studio!');
+});
+
+// Log a welcome message
+console.log('Code Studio is ready!');
+console.info('Happy coding!');`;
+
+      // HTML Editor
+      htmlEditor = monaco.editor.create(document.getElementById('htmlEditor'), {
+        value: localStorage.htmlCode || defaultHTML,
+        language: 'html',
+        theme: theme,
+        fontSize: 14,
+        fontFamily: "'JetBrains Mono', monospace",
+        minimap: { enabled: false },
+        lineNumbers: 'on',
+        roundedSelection: true,
+        scrollBeyondLastLine: false,
+        automaticLayout: true,
+        tabSize: 2,
+        wordWrap: 'on',
+        padding: { top: 10 }
+      });
+
+      // CSS Editor
+      cssEditor = monaco.editor.create(document.getElementById('cssEditor'), {
+        value: localStorage.cssCode || defaultCSS,
+        language: 'css',
+        theme: theme,
+        fontSize: 14,
+        fontFamily: "'JetBrains Mono', monospace",
+        minimap: { enabled: false },
+        lineNumbers: 'on',
+        roundedSelection: true,
+        scrollBeyondLastLine: false,
+        automaticLayout: true,
+        tabSize: 2,
+        wordWrap: 'on',
+        padding: { top: 10 }
+      });
+
+      // JS Editor
+      jsEditor = monaco.editor.create(document.getElementById('jsEditor'), {
+        value: localStorage.jsCode || defaultJS,
+        language: 'javascript',
+        theme: theme,
+        fontSize: 14,
+        fontFamily: "'JetBrains Mono', monospace",
+        minimap: { enabled: false },
+        lineNumbers: 'on',
+        roundedSelection: true,
+        scrollBeyondLastLine: false,
+        automaticLayout: true,
+        tabSize: 2,
+        wordWrap: 'on',
+        padding: { top: 10 }
+      });
+
+      // Content change listeners
+      htmlEditor.onDidChangeModelContent(() => {
+        modified.html = true;
+        updateTabIndicator('html');
+        updatePreview();
+        autoSave();
+      });
+
+      cssEditor.onDidChangeModelContent(() => {
+        modified.css = true;
+        updateTabIndicator('css');
+        updatePreview();
+        autoSave();
+      });
+
+      jsEditor.onDidChangeModelContent(() => {
+        modified.js = true;
+        updateTabIndicator('js');
+        updatePreview();
+        setupConsoleCapture();
+      });
+
+      // Cursor position tracking
+      [htmlEditor, cssEditor, jsEditor].forEach(editor => {
+        editor.onDidChangeCursorPosition((e) => {
+          document.getElementById('cursorPos').textContent = `Ln ${e.position.lineNumber}, Col ${e.position.column}`;
+        });
+      });
+
+      // Initial preview
+      updatePreview();
+    });
+
+    // Theme Toggle
     const root = document.documentElement;
     const toggle = document.getElementById('themeToggle');
+
     if (localStorage.theme === 'dark') {
       root.setAttribute('data-theme', 'dark');
       toggle.checked = true;
     }
+
     function toggleTheme() {
-      if (toggle.checked) {
+      const isDark = toggle.checked;
+      if (isDark) {
         root.setAttribute('data-theme', 'dark');
         localStorage.theme = 'dark';
+        monaco.editor.setTheme('vs-dark');
       } else {
         root.removeAttribute('data-theme');
         localStorage.removeItem('theme');
+        monaco.editor.setTheme('vs');
       }
       updatePreview();
     }
 
-    // --- CodeMirror Instances ---
-    const htmlEditor = CodeMirror.fromTextArea(document.getElementById('htmlCode'), {
-      mode: 'htmlmixed',
-      theme: localStorage.theme === 'dark' ? 'material-darker' : 'default',
-      lineNumbers: true,
-      lineWrapping: true,
-    });
-    const cssEditor = CodeMirror.fromTextArea(document.getElementById('cssCode'), {
-      mode: 'css',
-      theme: localStorage.theme === 'dark' ? 'material-darker' : 'default',
-      lineNumbers: true,
-      lineWrapping: true,
-    });
-    const jsEditor = CodeMirror.fromTextArea(document.getElementById('jsCode'), {
-      mode: 'javascript',
-      theme: localStorage.theme === 'dark' ? 'material-darker' : 'default',
-      lineNumbers: true,
-      lineWrapping: true,
-    });
-
-    // --- Preview ---
-    const iframe = document.getElementById('previewFrame');
+    // Preview Update
     function updatePreview() {
-      const html = htmlEditor.getValue();
-      const css = `<style>${cssEditor.getValue()}</style>`;
-      const js = `<script>${jsEditor.getValue()}<\/script>`;
+      const iframe = document.getElementById('previewFrame');
+      const html = htmlEditor ? htmlEditor.getValue() : '';
+      const css = cssEditor ? cssEditor.getValue() : '';
+      const js = jsEditor ? jsEditor.getValue() : '';
+
+      const content = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <style>${css}</style>
+        </head>
+        <body>
+          ${html}
+          <script>
+            // Console capture
+            (function() {
+              const originalLog = console.log;
+              const originalInfo = console.info;
+              const originalWarn = console.warn;
+              const originalError = console.error;
+
+              function sendToParent(type, args) {
+                window.parent.postMessage({
+                  type: 'console',
+                  method: type,
+                  args: args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a))
+                }, '*');
+              }
+
+              console.log = function() { sendToParent('log', arguments); originalLog.apply(console, arguments); };
+              console.info = function() { sendToParent('info', arguments); originalInfo.apply(console, arguments); };
+              console.warn = function() { sendToParent('warn', arguments); originalWarn.apply(console, arguments); };
+              console.error = function() { sendToParent('error', arguments); originalError.apply(console, arguments); };
+
+              window.onerror = function(msg, url, line) {
+                sendToParent('error', [msg + ' (line ' + line + ')']);
+              };
+            })();
+
+            try {
+              ${js}
+            } catch(e) {
+              console.error(e.message);
+            }
+          <\/script>
+        </body>
+        </html>
+      `;
+
       const doc = iframe.contentDocument || iframe.contentWindow.document;
       doc.open();
-      doc.write(html + css + js);
+      doc.write(content);
       doc.close();
+
+      document.getElementById('statusInfo').textContent = 'Ready';
     }
 
-    [htmlEditor, cssEditor, jsEditor].forEach(ed => ed.on('change', updatePreview));
-    updatePreview();
+    // Console capture from iframe
+    window.addEventListener('message', (e) => {
+      if (e.data.type === 'console') {
+        addConsoleLog(e.data.method, e.data.args.join(' '));
+      }
+    });
 
-    // --- File IO ---
-    function loadFiles() {
-      document.getElementById('fileInput').click();
+    function addConsoleLog(type, message) {
+      const consoleBody = document.getElementById('consoleBody');
+      const time = new Date().toLocaleTimeString();
+      const iconSvg = {
+        log: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/></svg>',
+        info: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>',
+        warn: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg>',
+        error: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg>'
+      };
+
+      const div = document.createElement('div');
+      div.className = `console-log ${type}`;
+      div.innerHTML = `
+        <span class="icon">${iconSvg[type]}</span>
+        <span class="time">${time}</span>
+        <span class="message">${message}</span>
+      `;
+      consoleBody.appendChild(div);
+      consoleBody.scrollTop = consoleBody.scrollHeight;
     }
 
+    function clearConsole() {
+      document.getElementById('consoleBody').innerHTML = `
+        <div class="console-log info">
+          <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+          <span class="message">Console cleared.</span>
+        </div>
+      `;
+    }
+
+    function setupConsoleCapture() {
+      // Already handled in updatePreview
+    }
+
+    // Tab Switching
+    function switchTab(tab) {
+      currentTab = tab;
+      
+      // Update sidebar
+      document.querySelectorAll('.sidebar .tab-item').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.getAttribute('onclick')?.includes(tab)) {
+          btn.classList.add('active');
+        }
+      });
+
+      // Update editor tabs
+      document.querySelectorAll('.editor-tab').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.getAttribute('onclick')?.includes(tab)) {
+          btn.classList.add('active');
+        }
+      });
+
+      // Update editor panels
+      document.querySelectorAll('.editor-panel').forEach(panel => {
+        panel.classList.remove('active');
+      });
+      document.getElementById(tab + 'Panel').classList.add('active');
+
+      // Focus editor
+      const editor = tab === 'html' ? htmlEditor : tab === 'css' ? cssEditor : jsEditor;
+      if (editor) {
+        editor.focus();
+      }
+
+      // Update status
+      document.getElementById('fileType').textContent = tab.toUpperCase();
+    }
+
+    function updateTabIndicator(tab) {
+      const tabEl = document.querySelector(`.editor-tab[onclick="switchTab('${tab}')"]`);
+      if (tabEl && modified[tab]) {
+        tabEl.classList.add('modified');
+      } else if (tabEl) {
+        tabEl.classList.remove('modified');
+      }
+    }
+
+    // Console Toggle
+    function toggleConsole() {
+      const console = document.getElementById('console');
+      consoleVisible = !consoleVisible;
+      console.style.display = consoleVisible ? 'flex' : 'none';
+    }
+
+    // File Operations
+    function newProject() {
+      if (modified.html || modified.css || modified.js) {
+        if (!confirm('You have unsaved changes. Create new project?')) return;
+      }
+      htmlEditor.setValue(`<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>New Project</title>
+</head>
+<body>
+  <h1>New Project</h1>
+</body>
+</html>`);
+      cssEditor.setValue('/* Add your styles here */');
+      jsEditor.setValue('// Add your JavaScript here');
+      modified = { html: false, css: false, js: false };
+      updateTabIndicator('html');
+      updateTabIndicator('css');
+      updateTabIndicator('js');
+      showToast('New project created', 'success');
+    }
+
+    function saveProject() {
+      showToast('Project saved locally', 'success');
+    }
+
+    function autoSave() {
+      localStorage.htmlCode = htmlEditor.getValue();
+      localStorage.cssCode = cssEditor.getValue();
+      localStorage.jsCode = jsEditor.getValue();
+    }
+
+    // File Input
     document.getElementById('fileInput').addEventListener('change', (e) => {
       [...e.target.files].forEach(file => {
         const reader = new FileReader();
@@ -270,14 +1211,17 @@
           else if (ext === 'css') cssEditor.setValue(content);
           else if (ext === 'js') jsEditor.setValue(content);
           updatePreview();
+          showToast(`Loaded ${file.name}`, 'success');
         };
         reader.readAsText(file);
       });
     });
 
     // Drag & Drop
-    ['dragenter', 'dragover', 'drop'].forEach(evt =>
-      document.addEventListener(evt, e => e.preventDefault()));
+    ['dragenter', 'dragover', 'drop'].forEach(evt => {
+      document.addEventListener(evt, e => e.preventDefault());
+    });
+
     document.addEventListener('drop', (e) => {
       e.preventDefault();
       [...e.dataTransfer.files].forEach(file => {
@@ -289,21 +1233,86 @@
           else if (ext === 'css') cssEditor.setValue(content);
           else if (ext === 'js') jsEditor.setValue(content);
           updatePreview();
+          showToast(`Loaded ${file.name}`, 'success');
         };
         reader.readAsText(file);
       });
     });
 
-    // --- Export ---
+    // Export
     function exportProject() {
       const zip = new JSZip();
       zip.file('index.html', htmlEditor.getValue());
       zip.file('styles.css', cssEditor.getValue());
       zip.file('script.js', jsEditor.getValue());
       zip.generateAsync({ type: 'blob' }).then(blob => {
-        saveAs(blob, 'code-studio.zip');
+        saveAs(blob, 'code-studio-project.zip');
+        showToast('Project exported successfully', 'success');
       });
     }
+
+    // Format Code
+    function formatCode() {
+      if (htmlEditor) htmlEditor.getAction('editor.action.formatDocument').run();
+      showToast('Code formatted', 'success');
+    }
+
+    // Toast Notifications
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          ${type === 'success' 
+            ? '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/>'
+            : '<circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>'}
+        </svg>
+        ${message}
+      `;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    // Keyboard Shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (e.ctrlKey || e.metaKey) {
+        if (e.key === 's') {
+          e.preventDefault();
+          saveProject();
+        } else if (e.key === 'n') {
+          e.preventDefault();
+          newProject();
+        } else if (e.key === 'e') {
+          e.preventDefault();
+          exportProject();
+        }
+      }
+    });
+
+    // Resize console with drag
+    const consoleEl = document.getElementById('console');
+    let isResizing = false;
+
+    document.getElementById('mainSplitter').addEventListener('mousedown', (e) => {
+      isResizing = true;
+      document.body.style.cursor = 'row-resize';
+      document.body.style.userSelect = 'none';
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (!isResizing) return;
+      const main = document.querySelector('.main');
+      const rect = main.getBoundingClientRect();
+      const height = rect.bottom - e.clientY - 30;
+      consoleEl.style.height = Math.max(100, Math.min(400, height)) + 'px';
+    });
+
+    document.addEventListener('mouseup', () => {
+      isResizing = false;
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    });
   </script>
 </body>
 </html>
